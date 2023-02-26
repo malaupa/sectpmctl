@@ -684,20 +684,12 @@ install ()
   rmdir "${tempdirname}"
 
   # configure framework.conf of dkms to add the sign helper script
-  dkmsconf="/etc/dkms/framework.conf"
-  if [ ! -f "${dkmsconf}" ]; then
-    echo "DKMS framework config ${dkmsconf} not found. Exit"
-    exit 4
-  elif [ "$(grep -E '^\s*sign_tool\s*=\s*"?/usr/lib/sectpmctl/scripts/dkms_sign_helper.sh"?\s*$' "${dkmsconf}")" ]; then
-    echo "DKMS framework already configured."
-    # @TODO SC2143: Use grep -q instead of comparing output with [ -n .. ]
-  elif [ "$(grep -E '^\s*sign_tool\s*=.*$' "${dkmsconf}")" ]; then
-    echo "DKMS framework configured differently. Exit"
-    exit 4
-  else
-    echo 'sign_tool="/usr/lib/sectpmctl/scripts/dkms_sign_helper.sh"' >> "${dkmsconf}"
-    echo "Configured DKMS framework."
-  fi
+  dkmsconf="/etc/dkms/framework.conf.d/sectpmctl_sign_tool.conf"
+  echo '# sectpmctl: do not edit or remove this file' > "${dkmsconf}" || exit 4
+  echo 'sign_file="/usr/lib/sectpmctl/scripts/dkms_sign_helper.sh"' >> "${dkmsconf}" || exit 4
+  echo 'mok_signing_key="/var/lib/sectpmctl/keys/db.obj"' >> "${dkmsconf}" || exit 4
+  echo 'mok_certificate="/var/lib/sectpmctl/keys/db.cer"' >> "${dkmsconf}" || exit 4
+  echo "Configured DKMS framework."
 
   # enable bootloader
   if [ ! -d "${SECTPMCTL_EFI_DIR}" ]; then
