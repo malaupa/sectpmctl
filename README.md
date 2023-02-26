@@ -4,9 +4,9 @@
 or efitools can't be executed successfully on your device. Create at least a backup of your data before installation. If you already
 installed DKMS modules, it is probably necessary to rebuild them after installing sectpmctl to have them signed.**
 
-We want to secure the Ubuntu 22.04 installation with LUKS and TPM2. Please read this README carefully before installation.
+We want to secure Ubuntu 22.04, 22.10 and 23.04 installationis with LUKS and TPM2. Please read this README carefully before installation.
 
-We assume a normal installation of Ubuntu 22.04 desktop by erasing the disk and using LVM and encryption. Don't select to create a recovery
+We assume a normal installation of Ubuntu desktop by erasing the disk and using LVM and encryption. Don't select to create a recovery
 key, only the LUKS password. A preseed installation is possible but currently undocumented. Other Linux distributions can probably be supported
 in future releases.
 
@@ -23,7 +23,7 @@ installation, see 'Recovery' for more information.
 It is recommended to only have one LUKS slot in use before installation, which is mostly slot 0. sectpmctl will additionally use slot 5 to
 store the TPM key.
 
-You can easily test the installation with virt-manager on a Ubuntu 22.04 host and a Ubuntu 22.04 guest. When creating a new VM you need to
+You can easily test the installation with virt-manager on a Ubuntu host and a Ubuntu guest. When creating a new VM you need to
 configure the VM before it starts automatically. In the overview select 'OVMF_CODE_4M.secboot.fd' as firmware and then add a new 'TPM
 emulated TIS 2.0' device. After installation of Ubuntu, you can start installing sectpmctl.
 
@@ -31,6 +31,11 @@ For transparency, the tpm2-tools commands for session encryption, provisioning, 
 end of this README. The commands for using Secure Boot are standard except for using the TPM as a key store for the db signing key. Take a
 look at the source code to see how that works. If you are wondering, yes the PK and KEK keys are not stored at all in the current
 implementation, they are simply not needed for anything.
+
+## Requirements
+
+* Ubuntu 22.04, 22.10 or 23.04
+* LUKS encrypted LVM installation
 
 ## Features
 
@@ -136,8 +141,7 @@ cd tpmsbsigntool
 gbp buildpackage --git-export-dir=../build_tpmsbsigntool -uc -us
 cd ..
 
-sudo dpkg -i build_tpmsbsigntool/tpmsbsigntool_0.9.4-2_amd64.deb
-sudo apt install -yf
+sudo apt install -y "$(realpath build_tpmsbsigntool/tpmsbsigntool_0.9.4-2_amd64.deb)"
 ```
 
 ## Build sectpmctl
@@ -147,6 +151,9 @@ You can ignore the 'debsign: gpg error occurred!  Aborting....' error when build
 ```
 sudo apt install -y debhelper efibootmgr efitools sbsigntool binutils mokutil dkms systemd udev \
   util-linux gdisk openssl uuid-runtime tpm2-tools fdisk
+
+# On Ubuntu 22.10 and later
+sudo apt install -y systemd-boot-efi
 
 git clone https://github.com/T-Systems-MMS/sectpmctl.git
 
@@ -261,8 +268,7 @@ All generated keys, passwords, or serialized keys are stored in '/var/lib/sectpm
 ```
 # 1. Point of no return, you need to complete at least until the following reboot command
 sudo apt remove --allow-remove-essential "grub*" "shim*"
-sudo dpkg -i sectpmctl_1.1.3-1_amd64.deb
-sudo apt install -yf
+sudo apt install -y "$(realpath sectpmctl_1.1.3-1_amd64.deb)"
 
 # optionally disable swap while keys are created
 sudo swapoff -a
@@ -760,5 +766,5 @@ Be careful with BIOS updates. They may delete the Secure Boot database which the
 
 Every piece of information or code in this repository is written and collected with the best intentions in mind. We do not
 warrant that it is complete, correct, or that it is working on your platform. We provide everything as is and try to fix bugs and
-security issues as soon as possible. Currently, Ubuntu 22.04 is the only supported distribution. Use at your own risk.
+security issues as soon as possible. Currently, Ubuntu is the only supported distribution. Use at your own risk.
 
