@@ -600,7 +600,9 @@ install ()
     if [ "$( efi-readvar | grep -c 'Variable dbx has no entries')" = 0 ]; then
       echo 'Secure Boot Database dbx is not empty'
       if [ "x${skip_dbx}" = "x0" ]; then
-        echo 'Use the "--skipdbx" option as a workaround. Read the documentation.'
+        echo 'Use the "--skipdbx" option as a workaround. Please read the section'
+        echo '"Acer laptops quirks" in the documentation, as this option might'
+        echo 'impact security: less /usr/share/sectpmctl/README.md'
         exit 3
       fi
     fi

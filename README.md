@@ -374,6 +374,13 @@ chmod +x install_tpm.sh
 
 # Reboot to test the installation
 sudo reboot
+
+# If the BIOS won't boot sectpmctl or shows "Secure Boot violation",
+# please try to select sectpmctl from the BIOS boot menu (F12, ESC).
+
+# If that works, but the system won't boot automatically, enter the BIOS
+# and try to modofy the boot order. Maybe another hard disk have pririty.
+# If you can't find sectpmctl, try all boot entries.
 ```
 
 The 'sectpmctl tpm install' command will print out the recovery key. It is highly recommended to store this key in a safe location. Without
@@ -754,6 +761,8 @@ mokutil --sb-state
 efi-readvar
 sudo tpm2_getcap properties-variable
 ```
+
+Inside the BIOS, sectpmctl might be shown as the boot entry '"*"'.
 
 ### Gigabyte mainboards
 
