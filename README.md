@@ -347,7 +347,11 @@ sudo reboot
 # optionally disable swap while keys are created
 sudo swapoff -a
 
-# Now your machine has its own set of Secure Boot keys, test it
+# Now your machine has its own set of Secure Boot keys, test it. The test may
+# fail if the TPM support is incomplete, like on some ACER devices. In such case,
+# skip this test and redo the tests manually by reading the source code of this
+# function. If all steps above have been processed in order and without errors,
+# all tests should pass anyway.
 sudo sectpmctl boot test
 
 # Install the LUKS TPM key. Enter your current LUKS key when asked.
@@ -368,6 +372,7 @@ fi
 __EOT
 chmod +x install_tpm.sh
 ./install_tpm.sh
+rm install_tpm.sh
 
 # STORE THE PRINTED RECOVERY KEY NOW!!!
 # SCROLL UP A BIT IF IT GET'S OUT OF SIGHT!!!
@@ -734,18 +739,18 @@ To solve this problem a loop is implemented to simply retry unsealing 5 times wi
 have a stable parsing of this specific error code, therefore the loop is triggered on all TPM errors at boot time.
 
 
-### Acer laptops quirks
+### ACER laptops quirks
 
 First to know is that you have to set a BIOS administrator password. Otherwise, the Secure Boot settings are grayed out and cannot be changed. 
 
-An installation on an Acer Swift 3 SF314-42 and an Acer Nitro AN515-45 laptop, both caused this problem:
+An installation on an ACER Swift 3 SF314-42 and an ACER Nitro AN515-45 laptop, both caused this problem:
 
 * The Secure Boot Forbidden Signature Database (DBX) could not be cleared by the Clear Mode in BIOS. Workaround: Use the '--skipdbx' option in the
 'sectpmctl boot install' command. Skipping the DBX db is safe if no multi boot is used and no Microsoft certificate is in the PCR 7 chain.
 See 'Lenovo P15 Gen 2 laptop NVidia Problem' for more information. When the '--skipdbx' option is used and a normal Ubuntu or Windows
 is installed at a later time, restore the Secure Boot factory keys from inside the BIOS to restore the DBX db. 
 
-An installation on an Acer Swift 3 SF314-42 caused this problems only once and then never again:
+An installation on an ACER Swift 3 SF314-42 caused this problems only once and then never again:
 
 * The Secure Boot Signature Database (DB) could not be cleared by the Clear Mode in BIOS. Fix: Clear it manually before installation with
 `efi-updatevar -d 0 db`.
