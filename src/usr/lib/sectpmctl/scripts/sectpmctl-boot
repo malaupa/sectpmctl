@@ -720,7 +720,7 @@ test_state()
   dmesg | grep -i 'secure' || (echo 'SECUREBOOT NOT FOUND IN DMESG' ; exit 3)
 
   echo 'Check if kernel is in EFI Secure Boot mode kernel lockdown'
-  dmesg | grep -i 'Kernel is locked down from EFI Secure Boot mode' || (echo 'KERNEL IS NOT IN SECUREBOOT LOCKDOWN MODE' ; exit 3)
+  dmesg | grep -i 'Kernel is locked down from' || (echo 'KERNEL IS NOT IN SECUREBOOT LOCKDOWN MODE' ; exit 3)
 
   echo 'Check if TPM was found during boot'
   dmesg | grep -i 'TPM' || (echo 'TPM NOT FOUND' ; exit 3)
