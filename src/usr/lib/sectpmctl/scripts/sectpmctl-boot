@@ -535,6 +535,7 @@ traverse_boot ()
 install ()
 {
   ommit_ms_keys="${1}"
+  skip_dbx="${2}"
 
   secureboot_mode="clearmode"
   mokutil --sb-state | grep 'Platform is in Setup Mode' || (echo 'Platform is not in Setup Mode' ; exit 3)
@@ -598,6 +599,13 @@ install ()
     fi
     if [ "$( efi-readvar | grep -c 'Variable dbx has no entries')" = 0 ]; then
       echo 'Secure Boot Database dbx is not empty'
+      if [ "x${skip_dbx}" = "x0" ]; then
+        echo 'Use the "--skipdbx" option as a workaround. Read the documentation.'
+        exit 3
+      fi
+    fi
+    if [ "x${skip_dbx}" = "x1" ] && [ ! "$( efi-readvar | grep -c 'Variable dbx has no entries')" = 0 ]; then
+      echo 'The "--skipdbx" option seems not to be needed, please remove it from the call.'
       exit 3
     fi
   fi
@@ -663,8 +671,9 @@ install ()
 
       efi-updatevar -f add_MS_db.auth db
     fi
-    efi-updatevar -f "${VENDOR_KEYS}/dbxupdate_x64.bin" -k KEK.key dbx
-    chattr +i /sys/firmware/efi/efivars/dbx-d719b2cb-3d3a-4596-a3bc-dad00e67656f
+    if [ "x${skip_dbx}" = "x0" ]; then
+      efi-updatevar -f "${VENDOR_KEYS}/dbxupdate_x64.bin" -k KEK.key dbx
+    fi
   fi
 
   if [ "x${ommit_ms_keys}" = "x0" ]; then
@@ -675,6 +684,7 @@ install ()
   fi
   efi-updatevar -f KEK.auth KEK
   efi-updatevar -f PK.auth PK
+  chattr +i /sys/firmware/efi/efivars/dbx-d719b2cb-3d3a-4596-a3bc-dad00e67656f
   chattr +i /sys/firmware/efi/efivars/db-d719b2cb-3d3a-4596-a3bc-dad00e67656f
   chattr +i /sys/firmware/efi/efivars/KEK-8be4df61-93ca-11d2-aa0d-00e098032b8c
   chattr +i /sys/firmware/efi/efivars/PK-8be4df61-93ca-11d2-aa0d-00e098032b8c
@@ -782,7 +792,7 @@ COMMANDS
   activate
   deactivate
   help
-  install [--withoutmicrosoftkeys]
+  install [--withoutmicrosoftkeys] [--skipdbx]
   remove --kernel <version>
   test
   update [--kernel <version>]
@@ -791,6 +801,7 @@ COMMANDS
 OPTIONS
     --kernel <version>
     --withoutmicrosoftkeys
+    --skipdbx
 
 __END
 
@@ -815,11 +826,14 @@ COMMANDS
 
     Show this help message.
 
-  install [--withoutmicrosoftkeys]
+  install [--withoutmicrosoftkeys] [--skipdbx]
      
     Install setpmctl bootloader. Read the documentation before using
     '--withoutmicrosoftkeys' as it most probably damages your hardware:
     less /usr/share/sectpmctl/README.md
+    Use '--skipdbx' only if clearing the Secure Boot does not clear
+    it completely and the sectpmctl boot install command asks to et this
+    option. See 'Acer laptops quirks' in the documentation.
 
   remove --kernel <version>
 
@@ -864,6 +878,12 @@ OPTIONS
     Read the documentation before using this option as it
     most probably damages your hardware:
     less /usr/share/sectpmctl/README.md
+    
+    --skipdbx
+    
+    Enables a quirk to don't write to the dbx database.
+    Use only if asked for by the install command.
+    Read the documentation for more information.
  
 EXAMPLES
 
@@ -919,38 +939,36 @@ case "${1}" in
     test_state
     ;;
   install)
-    if [ $# -ge 2 ]; then
-      case "${2}" in
+    shift
+    OMITMSK="0"
+    CONFIRMOMITMSK="0"
+    SKIPDBX="0"
+    while [ $# != 0 ]; do
+      case "${1}" in
         --withoutmicrosoftkeys)
-          if [ $# -eq 3 ]; then
-            case "${3}" in
-              --iamresponsiblefordamage)
-                install "1"
-                ;;
-              *)
-                echo "You also need to give this option: --iamresponsiblefordamage"
-                echo "Read the documentation before using this option as it most"
-                echo "probably damages your hardware:"
-                echo "less /usr/share/sectpmctl/README.md"
-                exit 1
-                ;;
-            esac
-          else
-            echo "You also need to give this option: --iamresponsiblefordamage"
-            echo "Read the documentation before using this option as it most"
-            echo "probably damages your hardware:"
-            echo "less /usr/share/sectpmctl/README.md"
-            exit 1
-          fi
+          OMITMSK="1"
+          ;;
+        --iamresponsiblefordamage)
+          CONFIRMOMITMSK="1"
+          ;;
+        --skipdbx)
+          SKIPDBX="1"
           ;;
         *)
           _usage
           exit 1
           ;;
       esac
-    else
-      install "0"
+      shift
+    done
+    if [ "x${OMITMSK}" = "x1" ] && [ "x${CONFIRMOMITMSK}" = "x0" ]; then
+      echo "You also need to give this option: --iamresponsiblefordamage"
+      echo "Read the documentation before using this option as it most"
+      echo "probably damages your hardware:"
+      echo "less /usr/share/sectpmctl/README.md"
+      exit 1
     fi
+    install "${OMITMSK}" "${SKIPDBX}"
     ;;
   remove)
     if [ "x${argument}" = "x" ]; then
