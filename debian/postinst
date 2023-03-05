@@ -19,6 +19,11 @@ case "$1" in
       install -m 1640 /usr/share/sectpmctl/examples/kernel_extra_options.example /var/lib/sectpmctl/kernel_extra_options
       chattr +i /var/lib/sectpmctl/kernel_extra_options
     fi
+    if [ ! -f /var/lib/sectpmctl/keys/pcr.list ]; then
+      echo "7,8,9,11,14" > /var/lib/sectpmctl/keys/pcr.list
+      chown root:root /var/lib/sectpmctl/keys/pcr.list
+      chmod 600 /var/lib/sectpmctl/keys/pcr.list
+    fi
     ;;
 esac
 
