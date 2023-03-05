@@ -1081,6 +1081,7 @@ esac
 
 copy_exec /bin/bash /bin
 
+copy_exec ${SECTPMCTL_KEYS}/pcr.list ${SECTPMCTL_KEYS}/pcr.list
 copy_exec ${SECTPMCTL_KEYS}/tpm_owner.pub ${SECTPMCTL_KEYS}/tpm_owner.pub
 copy_exec ${SECTPMCTL_KEYS}/tpm_owner_noda.pub ${SECTPMCTL_KEYS}/tpm_owner_noda.pub
 
