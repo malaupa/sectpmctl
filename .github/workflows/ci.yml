@@ -15,11 +15,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Fetch Tags
-        run: git fetch --force --tags
 
       - name: Install build tools
         run: sudo apt-get update && sudo apt-get install debhelper build-essential devscripts -y
@@ -32,8 +27,7 @@ jobs:
           cd ..
           echo "Result: $(ls *.deb)"
           sha512sum *.deb > checksums.txt
-          cd ${{ github.workspace }}
-          cp *.deb checksums.txt .
+          cp *.deb checksums.txt ${{ github.workspace }}/
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Store package
